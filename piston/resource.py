@@ -119,6 +119,17 @@ class Resource(object):
         """
         rm = request.method.upper()
 
+        if rm == 'POST':
+            block = getattr(request, 'POST', { })
+
+            # Support alternative request types via
+            # _method parameter in POST requests
+            if '_method' in block:
+                rm = request.method = block['_method'].upper()
+                sanitized = block.copy()
+                sanitized.pop('_method')
+                setattr(request, 'POST', sanitized)
+
         # Django's internal mechanism doesn't pick up
         # PUT request, so we trick it a little here.
         if rm == "PUT":
