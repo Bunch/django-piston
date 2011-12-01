@@ -1,7 +1,7 @@
 import warnings
 
 from utils import rc
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, FieldError
 from django.conf import settings
 
 typemapper = { }
@@ -108,6 +108,8 @@ class BaseHandler(object):
             return inst
         except self.model.MultipleObjectsReturned:
             return rc.DUPLICATE_ENTRY
+        except FieldError:
+            return rc.BAD_REQUEST
 
     def update(self, request, *args, **kwargs):
         if not self.has_model():
