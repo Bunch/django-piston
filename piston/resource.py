@@ -310,4 +310,4 @@ class Resource(object):
                 return HttpResponseServerError(
                     format_error('\n'.join(rep.format_exception())))
             else:
-                raise
+                return rc.INTERNAL_ERROR
