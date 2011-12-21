@@ -156,7 +156,7 @@ class Emitter(object):
 
             if handler or fields:
                 v = lambda f: getattr(data, f.attname)
-                
+
                 if not fields and handler:
                     """
                     Fields was not specified, try to find teh correct
@@ -164,9 +164,6 @@ class Emitter(object):
                     """
                     get_fields = set(handler.fields)
                     exclude_fields = set(handler.exclude).difference(get_fields)
-
-                    if 'absolute_uri' in get_fields:
-                        get_absolute_uri = True
 
                     if not get_fields:
                         get_fields = set([ f.attname.replace("_id", "", 1)
@@ -187,6 +184,9 @@ class Emitter(object):
 
                 else:
                     get_fields = set(fields)
+
+                if 'absolute_uri' in get_fields:
+                    get_absolute_uri = True
 
                 met_fields = self.method_fields(handler, get_fields)
 
