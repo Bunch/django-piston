@@ -16,19 +16,24 @@ class HandlerMetaClass(type):
         new_cls = type.__new__(cls, name, bases, attrs)
 
         def already_registered(model, anon):
-            for k, (m, a) in typemapper.iteritems():
+            for k, (m, a, d) in typemapper.iteritems():
                 if model == m and anon == a:
-                    return k
+                    return (k, d)
+
+            return (None, False)
 
         if hasattr(new_cls, 'model'):
-            if already_registered(new_cls.model, new_cls.is_anonymous):
+            (old_cls, default) = already_registered(new_cls.model, new_cls.is_anonymous)
+
+            if old_cls and default == new_cls.default_for_model:
                 if not getattr(settings, 'PISTON_IGNORE_DUPE_MODELS', False):
                     warnings.warn("Handler already registered for model %s, "
                         "you may experience inconsistent results." % new_cls.model.__name__)
 
-            typemapper[new_cls] = (new_cls.model, new_cls.is_anonymous)
+            if not old_cls or new_cls.default_for_model >= default:
+                typemapper[new_cls] = (new_cls.model, new_cls.is_anonymous, new_cls.default_for_model)
         else:
-            typemapper[new_cls] = (None, new_cls.is_anonymous)
+            typemapper[new_cls] = (None, new_cls.is_anonymous, new_cls.default_for_model)
 
         if name not in ('BaseHandler', 'AnonymousBaseHandler'):
             handler_tracker.append(new_cls)
@@ -51,6 +56,7 @@ class BaseHandler(object):
     anonymous = is_anonymous = False
     exclude = ( 'id', )
     fields =  ( )
+    default_for_model = False
 
     def flatten_dict(self, dct):
         return dict([ (str(k), dct.get(k)) for k in dct.keys() ])

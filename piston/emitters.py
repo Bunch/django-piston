@@ -156,18 +156,14 @@ class Emitter(object):
 
             if handler or fields:
                 v = lambda f: getattr(data, f.attname)
-
-                if handler:
-                    fields = getattr(handler, 'fields')    
                 
-                if not fields or hasattr(handler, 'fields'):
+                if not fields and handler:
                     """
                     Fields was not specified, try to find teh correct
                     version in the typemapper we were sent.
                     """
-                    mapped = self.in_typemapper(type(data), self.anonymous)
-                    get_fields = set(mapped.fields)
-                    exclude_fields = set(mapped.exclude).difference(get_fields)
+                    get_fields = set(handler.fields)
+                    exclude_fields = set(handler.exclude).difference(get_fields)
 
                     if 'absolute_uri' in get_fields:
                         get_absolute_uri = True
@@ -176,8 +172,8 @@ class Emitter(object):
                         get_fields = set([ f.attname.replace("_id", "", 1)
                             for f in data._meta.fields + data._meta.virtual_fields])
                     
-                    if hasattr(mapped, 'extra_fields'):
-                        get_fields.update(mapped.extra_fields)
+                    if hasattr(handler, 'extra_fields'):
+                        get_fields.update(handler.extra_fields)
 
                     # sets can be negated.
                     for exclude in exclude_fields:
@@ -300,7 +296,7 @@ class Emitter(object):
         return _any(self.data, self.fields)
 
     def in_typemapper(self, model, anonymous):
-        for klass, (km, is_anon) in self.typemapper.iteritems():
+        for klass, (km, is_anon, default) in self.typemapper.iteritems():
             if model is km and is_anon is anonymous:
                 return klass
 
