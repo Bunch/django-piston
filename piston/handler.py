@@ -31,6 +31,8 @@ class HandlerMetaClass(type):
                         "you may experience inconsistent results." % new_cls.model.__name__)
 
             if not old_cls or new_cls.default_for_model >= default:
+                if old_cls:
+                    del typemapper[old_cls]
                 typemapper[new_cls] = (new_cls.model, new_cls.is_anonymous, new_cls.default_for_model)
         else:
             typemapper[new_cls] = (None, new_cls.is_anonymous, new_cls.default_for_model)
