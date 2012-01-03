@@ -124,8 +124,9 @@ class BaseHandler(object):
             return rc.NOT_IMPLEMENTED
 
         pkfield = self.model._meta.pk.name
+        attrs = self.flatten_dict(request.data)
 
-        if pkfield not in kwargs:
+        if pkfield not in kwargs or not attrs:
             # No pk was specified
             return rc.BAD_REQUEST
 
@@ -136,7 +137,6 @@ class BaseHandler(object):
         except MultipleObjectsReturned: # should never happen, since we're using a PK
             return rc.BAD_REQUEST
 
-        attrs = self.flatten_dict(request.data)
         for k,v in attrs.iteritems():
             setattr( inst, k, v )
 
