@@ -1,6 +1,6 @@
 from __future__ import generators
 
-import decimal, re, inspect
+import decimal, re, inspect, time, datetime
 import copy
 
 try:
@@ -122,6 +122,8 @@ class Emitter(object):
                     ret = _any(f())
             elif repr(thing).startswith("<django.db.models.fields.related.RelatedManager"):
                 ret = _any(thing.all())
+            elif isinstance(thing, datetime.datetime):
+                ret = time.mktime(thing.timetuple()) * 1000
             else:
                 ret = smart_unicode(thing, strings_only=True)
 
