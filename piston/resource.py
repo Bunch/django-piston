@@ -130,9 +130,12 @@ class Resource(object):
                 sanitized.pop('_method')
                 setattr(request, 'POST', sanitized)
 
+                if rm == 'PUT':
+                    request.PUT = request.POST
+
         # Django's internal mechanism doesn't pick up
         # PUT request, so we trick it a little here.
-        if rm == "PUT":
+        elif rm == 'PUT':
             coerce_put_post(request)
 
         actor, anonymous = self.authenticate(request, rm)
