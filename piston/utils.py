@@ -33,6 +33,7 @@ class rc_factory(object):
                  NOT_FOUND = ('Not Found', 404),
                  DUPLICATE_ENTRY = ('Conflict/Duplicate', 409),
                  NOT_HERE = ('Gone', 410),
+                 PRECONDITION_FAILED = ('Precondition Failed', 417),
                  INTERNAL_ERROR = ('Internal Error', 500),
                  NOT_IMPLEMENTED = ('Not Implemented', 501),
                  THROTTLED = ('Throttled', 503))
