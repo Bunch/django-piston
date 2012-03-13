@@ -2,7 +2,7 @@ import warnings
 
 from utils import rc
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, FieldError
-from django.db.models import ForeignKey
+from django.db.models import ForeignKey, Model
 from django.conf import settings
 
 typemapper = { }
@@ -95,7 +95,9 @@ class BaseHandler(object):
         # Rename foreign keys to the __pk syntax for filters
         for f in self.model._meta.fields:
             if isinstance(f, ForeignKey) and kwargs.has_key(f.name):
-                kwargs[f.name + '__pk'] = kwargs.pop(f.name)
+                # Ensure we don't already have a model instance
+                if not isinstance(kwargs[f.name], Model):
+                    kwargs[f.name + '__pk'] = kwargs.pop(f.name)
 
         if pkfield in kwargs:
             try:
@@ -113,7 +115,7 @@ class BaseHandler(object):
 
         # Use keyword arguments to override
         # data specified in request
-        attrs = request.data.copy()
+        attrs = self.flatten_dict(request.data)
         attrs.update(kwargs)
 
         # Separate instance values and
@@ -123,7 +125,9 @@ class BaseHandler(object):
         # Rename foreign keys to the _id syntax for assignment
         for f in self.model._meta.fields:
             if isinstance(f, ForeignKey) and attrs.has_key(f.name):
-                ids[f.name + '_id'] = attrs.pop(f.name)[0]
+                # Ensure we don't already have a model instance
+                if not isinstance(attrs[f.name], Model):
+                    ids[f.name + '_id'] = attrs.pop(f.name)
 
         try:
             inst = self.queryset(request).get(**attrs)
