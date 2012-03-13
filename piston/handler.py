@@ -2,6 +2,7 @@ import warnings
 
 from utils import rc
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, FieldError
+from django.db.models import ForeignKey
 from django.conf import settings
 
 typemapper = { }
@@ -91,6 +92,11 @@ class BaseHandler(object):
 
         pkfield = self.model._meta.pk.name
 
+        # Rename foreign keys to the __pk syntax for filters
+        for f in self.model._meta.fields:
+            if isinstance(f, ForeignKey) and kwargs.has_key(f.name):
+                kwargs[f.name + '__pk'] = kwargs.pop(f.name)
+
         if pkfield in kwargs:
             try:
                 return self.queryset(request).get(pk=kwargs.get(pkfield))
@@ -105,13 +111,30 @@ class BaseHandler(object):
         if not self.has_model():
             return rc.NOT_IMPLEMENTED
 
-        attrs = self.flatten_dict(request.data)
+        # Use keyword arguments to override
+        # data specified in request
+        attrs = request.data.copy()
+        attrs.update(kwargs)
+
+        # Separate instance values and
+        # foreign key values
+        ids = {}
+
+        # Rename foreign keys to the _id syntax for assignment
+        for f in self.model._meta.fields:
+            if isinstance(f, ForeignKey) and attrs.has_key(f.name):
+                ids[f.name + '_id'] = attrs.pop(f.name)[0]
 
         try:
             inst = self.queryset(request).get(**attrs)
             return rc.DUPLICATE_ENTRY
         except self.model.DoesNotExist:
             inst = self.model(**attrs)
+
+            # Assign IDs for foreign keys
+            for (k, v) in ids.items():
+                setattr(inst, k, v)
+
             inst.save()
             return inst
         except self.model.MultipleObjectsReturned:
