@@ -153,7 +153,18 @@ class Emitter(object):
             `exclude` on the handler (see `typemapper`.)
             """
             ret = { }
-            handler = self.in_typemapper(type(data), self.anonymous)
+
+            # Properly handle deferred models
+            # XXX This is fragile since we rely both
+            #     on _deferred and the fact that the
+            #     immediate parent class is that of
+            #     the original model
+            if getattr(data, '_deferred'):
+                klass = data.__class__.__bases__[0]
+            else:
+                klass = type(data)
+
+            handler = self.in_typemapper(klass, self.anonymous)
             get_absolute_uri = False
 
             if handler or fields:
