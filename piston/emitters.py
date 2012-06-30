@@ -122,8 +122,8 @@ class Emitter(object):
                     ret = _any(f())
             elif repr(thing).startswith("<django.db.models.fields.related.RelatedManager"):
                 ret = _any(thing.all())
-            elif isinstance(thing, datetime.datetime):
-                ret = time.mktime(thing.timetuple()) * 1000
+            #elif isinstance(thing, datetime.datetime):
+            #    ret = time.mktime(thing.timetuple()) * 1000
             else:
                 ret = smart_unicode(thing, strings_only=True)
 
@@ -184,7 +184,7 @@ class Emitter(object):
                     if not get_fields:
                         get_fields = set([ f.attname.replace("_id", "", 1)
                             for f in data._meta.fields + data._meta.virtual_fields])
-                    
+
                     if hasattr(handler, 'extra_fields'):
                         get_fields.update(handler.extra_fields)
 
