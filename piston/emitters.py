@@ -2,6 +2,9 @@ from __future__ import generators
 
 import decimal, re, inspect, time, datetime
 import copy
+import pytz
+
+from django.conf import settings
 
 try:
     # yaml isn't standard with python.  It shouldn't be required if it
@@ -122,8 +125,13 @@ class Emitter(object):
                     ret = _any(f())
             elif repr(thing).startswith("<django.db.models.fields.related.RelatedManager"):
                 ret = _any(thing.all())
-            #elif isinstance(thing, datetime.datetime):
-            #    ret = time.mktime(thing.timetuple()) * 1000
+            elif isinstance(thing, datetime.datetime):
+                mtl = pytz.timezone(settings.TIME_ZONE)
+                thing = mtl.localize(thing)
+                thing = thing.astimezone(pytz.utc)
+                ret = thing.strftime("%Y-%m-%d %H:%M:%S %z")
+                #Original code
+                #ret = time.mktime(thing.timetuple()) * 1000
             else:
                 ret = smart_unicode(thing, strings_only=True)
 
