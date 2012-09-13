@@ -25,18 +25,18 @@ class rc_factory(object):
     """
     Status codes.
     """
-    CODES = dict(ALL_OK = ('OK', 200),
-                 CREATED = ('Created', 201),
+    CODES = dict(ALL_OK = ({'message': 'OK'}, 200),
+                 CREATED = ({'message' : 'Created'}, 201),
                  DELETED = ('', 204), # 204 says "Don't send a body!"
-                 BAD_REQUEST = ('Bad Request', 400),
-                 FORBIDDEN = ('Forbidden', 401),
-                 NOT_FOUND = ('Not Found', 404),
-                 DUPLICATE_ENTRY = ('Conflict/Duplicate', 409),
-                 NOT_HERE = ('Gone', 410),
-                 PRECONDITION_FAILED = ('Precondition Failed', 417),
-                 INTERNAL_ERROR = ('Internal Error', 500),
-                 NOT_IMPLEMENTED = ('Not Implemented', 501),
-                 THROTTLED = ('Throttled', 503))
+                 BAD_REQUEST = ({'message': 'Bad Request'}, 400),
+                 FORBIDDEN = ({'message': 'Forbidden'}, 401),
+                 NOT_FOUND = ({'message': 'Not Found'}, 404),
+                 DUPLICATE_ENTRY = ({'message': 'Conflict/Duplicate'}, 409),
+                 NOT_HERE = ({'message': 'Gone'}, 410),
+                 PRECONDITION_FAILED = ({'message': 'Precondition Failed'}, 417),
+                 INTERNAL_ERROR = ({'message': 'Internal Error'}, 500),
+                 NOT_IMPLEMENTED = ({'message': 'Not Implemented'}, 501),
+                 THROTTLED = ({'message': 'Throttled'}, 503))
 
     def __getattr__(self, attr):
         """
