@@ -4,6 +4,7 @@ from utils import rc
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, FieldError
 from django.db.models import ForeignKey, Model
 from django.conf import settings
+from django.views.decorators.http import condition as django_condition
 
 typemapper = { }
 handler_tracker = [ ]
@@ -191,3 +192,24 @@ class AnonymousBaseHandler(BaseHandler):
     """
     is_anonymous = True
     allowed_methods = ('GET',)
+
+
+def condition(etag_func=None, last_modified_func=None):
+
+    def decorator(func):
+        func.piston_precondition_decorator = django_condition(
+            etag_func=etag_func,
+            last_modified_func=last_modified_func
+        )
+
+        return func
+
+    return decorator
+
+
+def etag(etag_func):
+    return condition(etag_func=etag_func)
+
+
+def last_modified(last_modified_func):
+    return condition(last_modified_func=last_modified_func)

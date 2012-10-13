@@ -174,6 +174,23 @@ class Resource(object):
         # don't want to pass these along to the handler.
         request = self.cleanup_request(request)
 
+        # Create a fake controller we can
+        # use to test conditional headers
+        etag = last_modified = None
+        if hasattr(meth, 'piston_precondition_decorator'):
+            @meth.piston_precondition_decorator
+            def fake_controller(request, *args, **kwargs):
+                return rc.ALL_OK
+
+            response = fake_controller(request, *args, **kwargs)
+            if response.status_code == 304:
+                return response
+
+            if response.has_header('ETag'):
+                etag = response['ETag']
+            if response.has_header('Last-Modified'):
+                last_modified = response['Last-Modified']
+
         try:
             result = meth(request, *args, **kwargs)
         except Exception, e:
@@ -218,6 +235,13 @@ class Resource(object):
                 resp = HttpResponse(stream, mimetype=ct, status=status_code)
             else:
                 resp = stream
+
+            # Copy any conditional headers we
+            # may have generated earlier
+            if etag:
+                resp['ETag'] = etag
+            if last_modified:
+                resp['Last-Modified'] = last_modified
 
             resp.streaming = self.stream
 
