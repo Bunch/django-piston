@@ -17,6 +17,16 @@ class HandlerMetaClass(type):
     def __new__(cls, name, bases, attrs):
         new_cls = type.__new__(cls, name, bases, attrs)
 
+        # If this model has inherited default_for_model,
+        # then lets turn it off
+        base_default = False
+        for base in bases:
+            if type(base).__name__ != 'BaseHandler':
+                base_default = base_default or getattr(base, 'default_for_model', False)
+
+        if base_default:
+            new_cls.default_for_model = False
+
         def already_registered(model, anon):
             for k, (m, a, d) in typemapper.iteritems():
                 if model == m and anon == a:
