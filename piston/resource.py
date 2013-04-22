@@ -67,7 +67,7 @@ class Resource(object):
 
     def form_validation_response(self, e):
         """
-        Method to return form validation error information. 
+        Method to return form validation error information.
         You will probably want to override this in your own
         `Resource` subclass.
         """
@@ -174,23 +174,6 @@ class Resource(object):
         # don't want to pass these along to the handler.
         request = self.cleanup_request(request)
 
-        # Create a fake controller we can
-        # use to test conditional headers
-        etag = last_modified = None
-        if hasattr(meth, 'piston_precondition_decorator'):
-            @meth.piston_precondition_decorator
-            def fake_controller(request, *args, **kwargs):
-                return rc.ALL_OK
-
-            response = fake_controller(request, *args, **kwargs)
-            if response.status_code == 304:
-                return response
-
-            if response.has_header('ETag'):
-                etag = response['ETag']
-            if response.has_header('Last-Modified'):
-                last_modified = response['Last-Modified']
-
         try:
             result = meth(request, *args, **kwargs)
         except Exception, e:
@@ -207,20 +190,39 @@ class Resource(object):
             result.content = "Invalid output format specified '%s'." % em_format
             return result
 
+
+        # Create a fake controller we can
+        # use to test conditional headers
+        etag = last_modified = None
+        if hasattr(meth, 'piston_precondition_decorator'):
+            @meth.piston_precondition_decorator
+            def fake_controller(request, *args, **kwargs):
+                return rc.ALL_OK
+
+            response = fake_controller(request, *args, **kwargs)
+            response['Content-Type'] = ct
+            if response.status_code == 304:
+                return response
+
+            if response.has_header('ETag'):
+                etag = response['ETag']
+            if response.has_header('Last-Modified'):
+                last_modified = response['Last-Modified']
+
         status_code = 200
 
         # If we're looking at a response object which contains non-string
-        # content, then assume we should use the emitter to format that 
+        # content, then assume we should use the emitter to format that
         # content
         if isinstance(result, HttpResponse) and not \
                 (isinstance(result._container, basestring) \
                 and not hasattr(result._container, '__iter__')):
             status_code = result.status_code
             # Note: We can't use result.content here because that method attempts
-            # to convert the content into a string which we don't want. 
+            # to convert the content into a string which we don't want.
             # when _is_string is False _container is the raw data
             result = result._container
-     
+
         srl = emitter(result, typemapper, handler, fields, anonymous)
 
         try:
@@ -287,7 +289,7 @@ class Resource(object):
 
     def error_handler(self, e, request, meth, em_format):
         """
-        Override this method to add handling of errors customized for your 
+        Override this method to add handling of errors customized for your
         needs
         """
         if isinstance(e, FormValidationError):
@@ -315,8 +317,8 @@ class Resource(object):
 
         elif isinstance(e, HttpStatusCode):
             return e.response
- 
-        else: 
+
+        else:
             """
             On errors (like code errors), we'd like to be able to
             give crash reports to both admins and also the calling
