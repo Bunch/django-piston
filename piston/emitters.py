@@ -382,7 +382,7 @@ class XMLEmitter(Emitter):
         else:
             xml.characters(smart_unicode(data))
 
-    def render(self, request):
+    def render(self, request=None):
         stream = StringIO.StringIO()
 
         xml = SimplerXMLGenerator(stream, "utf-8")
@@ -403,8 +403,8 @@ class JSONEmitter(Emitter):
     """
     JSON emitter, understands timestamps.
     """
-    def render(self, request):
-        cb = request.GET.get('callback', None)
+    def render(self, request=None):
+        cb = request and request.GET.get('callback', None)
         seria = simplejson.dumps(self.construct(), cls=DateTimeAwareJSONEncoder, ensure_ascii=False, indent=4)
 
         # Callback
@@ -421,7 +421,7 @@ class YAMLEmitter(Emitter):
     YAML emitter, uses `safe_dump` to omit the
     specific types when outputting to non-Python.
     """
-    def render(self, request):
+    def render(self, request=None):
         return yaml.safe_dump(self.construct())
 
 if yaml:  # Only register yaml if it was import successfully.
@@ -432,7 +432,7 @@ class PickleEmitter(Emitter):
     """
     Emitter that returns Python pickled.
     """
-    def render(self, request):
+    def render(self, request=None):
         return pickle.dumps(self.construct())
 
 Emitter.register('pickle', PickleEmitter, 'application/python-pickle')
@@ -452,7 +452,7 @@ class DjangoEmitter(Emitter):
     """
     Emitter for the Django serialized format.
     """
-    def render(self, request, format='xml'):
+    def render(self, request=None, format='xml'):
         if isinstance(self.data, HttpResponse):
             return self.data
         elif isinstance(self.data, (int, str)):
