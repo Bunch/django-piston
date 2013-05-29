@@ -1,10 +1,11 @@
+import json as simplejson
+
 # Django imports
 from django.core import mail
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.template import loader, TemplateDoesNotExist
 from django.http import HttpRequest, HttpResponse
-from django.utils import simplejson
 
 # Piston imports
 from test import TestCase
