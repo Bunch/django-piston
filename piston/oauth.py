@@ -613,7 +613,7 @@ class OAuthSignatureMethod_HMAC_SHA1(OAuthSignatureMethod):
         if token:
             key += escape(token.secret)
         raw = '&'.join(sig)
-        return key, raw
+        return str(key), raw
 
     def build_signature(self, oauth_request, consumer, token):
         """Builds the base signature string."""
