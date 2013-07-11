@@ -15,6 +15,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from piston import forms
 
+class HttpResponseRedirectSchemes(HttpResponseRedirect):
+    allowed_schemes = HttpResponseRedirect.allowed_schemes + \
+            ['chrome-extension']
+
 class NoAuthentication(object):
     """
     Authentication handler that always returns
@@ -214,7 +218,7 @@ def oauth_user_auth(request):
                 callback = getattr(settings, 'OAUTH_CALLBACK_VIEW')
                 return get_callable(callback)(request, token)
                 
-            response = HttpResponseRedirect(callback+args)
+            response = HttpResponseRedirectSchemes(callback+args)
                 
         except oauth.OAuthError, err:
             response = send_oauth_error(err)
