@@ -11,6 +11,7 @@ from django.core.urlresolvers import get_callable
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_exempt
 
 from piston import forms
 
@@ -174,6 +175,7 @@ def oauth_auth_view(request, token, callback, params):
             { 'form': form }, RequestContext(request))
 
 @login_required
+@csrf_exempt
 def oauth_user_auth(request):
     oauth_server, oauth_request = initialize_server_request(request)
     
