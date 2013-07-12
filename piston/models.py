@@ -85,7 +85,7 @@ class Token(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, related_name='tokens')
     consumer = models.ForeignKey(Consumer)
     
-    callback = models.CharField(max_length=255, null=True, blank=True)
+    callback = models.TextField(null=True, blank=True)
     callback_confirmed = models.BooleanField(default=False)
     
     objects = TokenManager()
