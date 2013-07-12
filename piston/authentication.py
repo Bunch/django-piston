@@ -1,4 +1,6 @@
 import binascii
+import cgi
+import urllib
 
 import oauth
 from django.http import HttpResponse, HttpResponseRedirect
@@ -217,8 +219,18 @@ def oauth_user_auth(request):
             if not callback:
                 callback = getattr(settings, 'OAUTH_CALLBACK_VIEW')
                 return get_callable(callback)(request, token)
-                
-            response = HttpResponseRedirectSchemes(callback+args)
+
+            if '?' in callback:
+                # Callback has a query string, merge parameters
+                url, qs = callback.split('?', 1)
+                qs = cgi.parse_qs(qs)
+                args = cgi.parse_qs(args.lstrip('?'))
+                qs.update(args)
+                url += '?' + urllib.urlencode(qs, 1)
+            else:
+                url = callback + args
+
+            response = HttpResponseRedirectSchemes(url)
                 
         except oauth.OAuthError, err:
             response = send_oauth_error(err)
