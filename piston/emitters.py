@@ -106,6 +106,8 @@ class Emitter(object):
 
             if isinstance(thing, QuerySet):
                 ret = _qs(thing, fields)
+            elif isinstance(thing, tuple) and hasattr(thing, '_asdict'):
+                ret = _dict(thing._asdict(), fields)
             elif isinstance(thing, (tuple, list, set)):
                 ret = _list(thing, fields)
             elif isinstance(thing, dict):
