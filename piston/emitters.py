@@ -90,7 +90,7 @@ class Emitter(object):
 
         return ret
 
-    def construct(self):
+    def construct(self, request=None):
         """
         Recursively serialize a lot of types, and
         in cases where it doesn't recognize the type,
@@ -255,7 +255,9 @@ class Emitter(object):
                         maybe = getattr(data, maybe_field, None)
                         if maybe is not None:
                             if callable(maybe):
-                                if len(inspect.getargspec(maybe)[0]) <= 1:
+                                if 'request' in inspect.getargspec(maybe)[0]:
+                                    ret[maybe_field] = _any(maybe(request=request))
+                                elif len(inspect.getargspec(maybe)[0]) <= 1:
                                     ret[maybe_field] = _any(maybe())
                             else:
                                 ret[maybe_field] = _any(maybe)
@@ -407,7 +409,7 @@ class JSONEmitter(Emitter):
     """
     def render(self, request=None):
         cb = request and request.GET.get('callback', None)
-        seria = simplejson.dumps(self.construct(), cls=DateTimeAwareJSONEncoder, ensure_ascii=False, indent=4)
+        seria = simplejson.dumps(self.construct(request=request), cls=DateTimeAwareJSONEncoder, ensure_ascii=False, indent=4)
 
         # Callback
         if cb and is_valid_jsonp_callback_value(cb):
